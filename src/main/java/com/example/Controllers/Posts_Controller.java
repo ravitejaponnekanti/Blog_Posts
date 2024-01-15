@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Controllers.DTOs.PostDtos;
+import com.example.Controllers.DTOs.PostResponse;
 import com.example.Service.Post_Service;
 
 @RestController
@@ -25,8 +27,12 @@ public class Posts_Controller {
 	
 	
 	@GetMapping("/AllPosts")
-	public ResponseEntity<List<PostDtos>> getAllPost(){
-		return new ResponseEntity<>(PostService.getAllPosts(),HttpStatus.OK);
+	public ResponseEntity<PostResponse> getAllPost(
+			@RequestParam(value="pageNo",defaultValue="0",required=false) int pageNo,
+			@RequestParam(value="pageValue",defaultValue="10",required=false) int pageValue,
+			@RequestParam(value="sortBy",defaultValue="id",required=false) String sortBy,
+			@RequestParam(value="sortdir",defaultValue="asc",required=false)String sortdir){
+		return new ResponseEntity<PostResponse>(PostService.getAllPosts(pageNo, pageValue,sortBy,sortdir),HttpStatus.OK);
 	}
 	
 	@GetMapping("/Post/{id}")

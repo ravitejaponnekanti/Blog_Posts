@@ -5,9 +5,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import com.example.Controllers.DTOs.PostDtos;
+import com.example.Controllers.DTOs.*;
 import com.example.Exceptions.ResourceNotFoundException;
 import com.example.Repos.Post_Repo;
 import com.example.Model.*;
@@ -25,12 +28,28 @@ public class Post_Service {
 		return postdto;
 	}
 
-	public List<PostDtos> getAllPosts() {
-		List<Post> posts=PostRepo.findAll();
-		return posts.stream()
+	public PostResponse getAllPosts(int pageNo,int pageValue,String sortBy,String sortdir ) {
+		Sort sort=sortdir.equalsIgnoreCase(Sort.Direction.ASC.name())? 
+				Sort.by(sortBy).ascending():Sort.by(sortBy).descending();
+			
+		PageRequest pageable= PageRequest.of(pageNo, pageValue, sort );
+		Page<Post> pageposts=PostRepo.findAll(pageable);
+		List<Post> posts=pageposts.getContent();
+		PostResponse postresponse = new PostResponse();
+		List<PostDtos> content= posts.stream()
 				.map(post->mapToDto(post))
-				.collect(Collectors.toList());	
-		}
+				.collect(Collectors.toList());
+		
+		postresponse.setContent(content);
+		postresponse.setPageNo(pageposts.getNumber());
+		postresponse.setPageValue(pageposts.getSize());
+		postresponse.setTotalPages(pageposts.getTotalPages());
+		postresponse.setTotalElements(pageposts.getTotalElements());
+	    postresponse.setLast(pageposts.isLast());
+	    
+	    return postresponse;
+	    
+	}
 	
 	public PostDtos getByPostId(Long id) {
 		Optional<Post> post=PostRepo.findById(id);
